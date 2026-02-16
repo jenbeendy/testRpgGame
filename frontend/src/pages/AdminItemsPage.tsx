@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuthStore } from '../store/auth'
 import { useAdminItemStore } from '../store/adminItemStore'
+import AdminLayout from '../components/AdminLayout'
 import ItemList from '../components/admin/ItemList'
 import ItemTemplateEditor from '../components/admin/ItemTemplateEditor'
 import JSONBPropertiesEditor from '../components/admin/JSONBPropertiesEditor'
@@ -9,19 +8,12 @@ import ItemDeleteModal from '../components/admin/ItemDeleteModal'
 import { useAdminItem } from '../hooks/useAdminItems'
 
 export default function AdminItemsPage() {
-  const navigate = useNavigate()
-  const logout = useAuthStore((state) => state.logout)
   const selectedItemId = useAdminItemStore((state) => state.selectedItemId)
   const selectItem = useAdminItemStore((state) => state.selectItem)
   const reset = useAdminItemStore((state) => state.reset)
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const { data: item } = useAdminItem(selectedItemId)
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
 
   const handleCreateNew = () => {
     selectItem(null)
@@ -37,17 +29,9 @@ export default function AdminItemsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
+    <AdminLayout>
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold">Admin - Item Template Editor</h1>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            Logout
-          </button>
-        </div>
+        <h1 className="text-3xl font-bold mb-8">Item Template Editor</h1>
 
         <div className="grid grid-cols-5 gap-6">
           {/* Left Sidebar - Item List */}
@@ -90,6 +74,6 @@ export default function AdminItemsPage() {
           />
         )}
       </div>
-    </div>
+    </AdminLayout>
   )
 }

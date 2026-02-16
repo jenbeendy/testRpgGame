@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuthStore } from '../store/auth'
 import { useAdminStore } from '../store/adminStore'
+import AdminLayout from '../components/AdminLayout'
 import RecipeList from '../components/admin/RecipeList'
 import RecipeEditor from '../components/admin/RecipeEditor'
 import IngredientEditor from '../components/admin/IngredientEditor'
@@ -9,19 +8,12 @@ import RecipeDeleteModal from '../components/admin/RecipeDeleteModal'
 import { useAdminRecipe } from '../hooks/useAdminRecipes'
 
 export default function AdminRecipesPage() {
-  const navigate = useNavigate()
-  const logout = useAuthStore((state) => state.logout)
   const selectedRecipeId = useAdminStore((state) => state.selectedRecipeId)
   const selectRecipe = useAdminStore((state) => state.selectRecipe)
   const reset = useAdminStore((state) => state.reset)
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const { data: recipe } = useAdminRecipe(selectedRecipeId)
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
 
   const handleCreateNew = () => {
     selectRecipe(null)
@@ -37,17 +29,9 @@ export default function AdminRecipesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
+    <AdminLayout>
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold">Admin - Recipe Editor</h1>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            Logout
-          </button>
-        </div>
+        <h1 className="text-3xl font-bold mb-8">Recipe Editor</h1>
 
         <div className="grid grid-cols-3 gap-6">
           {/* Left Sidebar - Recipe List */}
@@ -90,6 +74,6 @@ export default function AdminRecipesPage() {
           />
         )}
       </div>
-    </div>
+    </AdminLayout>
   )
 }

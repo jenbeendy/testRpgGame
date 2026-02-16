@@ -3,6 +3,7 @@ import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
+import AdminDashboardPage from './pages/AdminDashboardPage'
 import AdminRecipesPage from './pages/AdminRecipesPage'
 import AdminItemsPage from './pages/AdminItemsPage'
 import PrivateRoute from './components/PrivateRoute'
@@ -22,6 +23,20 @@ function App() {
             element={
               <PrivateRoute>
                 <DashboardPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={<Navigate to="/admin/dashboard" replace />}
+          />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <PrivateRoute>
+                <AdminRoute>
+                  <AdminDashboardPage />
+                </AdminRoute>
               </PrivateRoute>
             }
           />
