@@ -53,6 +53,8 @@ func main() {
 		r.Get("/items/{id}", adminHandler.GetItemHandler)
 		r.Put("/items/{id}", adminHandler.UpdateItemHandler)
 		r.Delete("/items/{id}", adminHandler.DeleteItemHandler)
+		r.Post("/import/preview", adminHandler.PreviewBatchImportHandler)
+		r.Post("/import/execute", adminHandler.ExecuteBatchImportHandler)
 	})
 
 	port := os.Getenv("PORT")

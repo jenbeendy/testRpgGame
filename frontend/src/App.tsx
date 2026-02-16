@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import AdminRecipesPage from './pages/AdminRecipesPage'
 import AdminItemsPage from './pages/AdminItemsPage'
+import AdminBatchImportPage from './pages/AdminBatchImportPage'
 import PrivateRoute from './components/PrivateRoute'
 import AdminRoute from './components/AdminRoute'
 
@@ -56,6 +57,16 @@ function App() {
               <PrivateRoute>
                 <AdminRoute>
                   <AdminItemsPage />
+                </AdminRoute>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/import"
+            element={
+              <PrivateRoute>
+                <AdminRoute>
+                  <AdminBatchImportPage />
                 </AdminRoute>
               </PrivateRoute>
             }

@@ -14,7 +14,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { path: '/admin/dashboard', label: 'Dashboard' },
     { path: '/admin/recipes', label: 'Recipe Editor' },
     { path: '/admin/items', label: 'Item Templates' },
-    { path: '/admin/import', label: 'Batch Import', disabled: true },
+    { path: '/admin/import', label: 'Batch Import' },
   ]
 
   const handleLogout = () => {
@@ -35,14 +35,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           {navItems.map((item) => (
             <button
               key={item.path}
-              onClick={() => !item.disabled && navigate(item.path)}
-              disabled={item.disabled}
+              onClick={() => navigate(item.path)}
               className={`w-full text-left px-4 py-3 rounded transition ${
                 isActive(item.path)
                   ? 'bg-blue-700 border-l-4 border-blue-400'
-                  : item.disabled
-                    ? 'text-gray-600 cursor-not-allowed'
-                    : 'hover:bg-gray-700'
+                  : 'hover:bg-gray-700'
               }`}
             >
               {item.label}
