@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import AdminRecipesPage from './pages/AdminRecipesPage'
+import AdminItemsPage from './pages/AdminItemsPage'
 import PrivateRoute from './components/PrivateRoute'
 import AdminRoute from './components/AdminRoute'
 
@@ -30,6 +31,16 @@ function App() {
               <PrivateRoute>
                 <AdminRoute>
                   <AdminRecipesPage />
+                </AdminRoute>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/items"
+            element={
+              <PrivateRoute>
+                <AdminRoute>
+                  <AdminItemsPage />
                 </AdminRoute>
               </PrivateRoute>
             }
