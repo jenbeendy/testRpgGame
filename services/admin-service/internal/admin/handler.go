@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/rpgGame/pkg/models"
 )
 
 type Handler struct {
@@ -59,11 +60,13 @@ func (h *Handler) CreateRecipeHandler(w http.ResponseWriter, r *http.Request) {
 // CreateItemHandler POST /admin/items
 func (h *Handler) CreateItemHandler(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Name           string `json:"name"`
-		Type           string `json:"type"`
-		Rarity         string `json:"rarity"`
-		BaseDurability int    `json:"base_durability"`
-		RepairCost     int    `json:"repair_cost"`
+		Name            string                 `json:"name"`
+		Type            string                 `json:"type"`
+		Rarity          string                 `json:"rarity"`
+		BaseDurability  int                    `json:"base_durability"`
+		RepairCost      int                    `json:"repair_cost"`
+		RepairMaterials map[string]interface{} `json:"repair_materials"`
+		Properties      map[string]interface{} `json:"properties"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -71,7 +74,11 @@ func (h *Handler) CreateItemHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	itemID, err := h.service.CreateItem(req.Name, req.Type, req.Rarity, req.BaseDurability, req.RepairCost)
+	// Encode JSONB fields
+	repairMatBytes, _ := json.Marshal(req.RepairMaterials)
+	propBytes, _ := json.Marshal(req.Properties)
+
+	itemID, err := h.service.CreateItem(req.Name, req.Type, req.Rarity, req.BaseDurability, req.RepairCost, models.JSONB(repairMatBytes), models.JSONB(propBytes))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -99,6 +106,68 @@ func (h *Handler) DeleteRecipeHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"status": "deleted"})
 }
 
+// GetRecipesHandler GET /admin/recipes
+func (h *Handler) GetRecipesHandler(w http.ResponseWriter, r *http.Request) {
+	recipes, err := h.service.GetRecipes()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string][]models.Recipe{"recipes": recipes})
+}
+
+// GetRecipeHandler GET /admin/recipes/:id
+func (h *Handler) GetRecipeHandler(w http.ResponseWriter, r *http.Request) {
+	recipeID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		http.Error(w, "invalid recipe id", http.StatusBadRequest)
+		return
+	}
+
+	recipe, err := h.service.GetRecipe(recipeID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(recipe)
+}
+
+// UpdateRecipeHandler PUT /admin/recipes/:id
+func (h *Handler) UpdateRecipeHandler(w http.ResponseWriter, r *http.Request) {
+	recipeID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		http.Error(w, "invalid recipe id", http.StatusBadRequest)
+		return
+	}
+
+	var req struct {
+		Name             string `json:"name"`
+		Description      string `json:"description"`
+		ResultItemID     int64  `json:"result_item_id"`
+		SuccessRate      int    `json:"success_rate"`
+		RequiredSkillLvl int    `json:"required_skill_level"`
+		CraftingTimeMs   int    `json:"crafting_time_ms"`
+		Discoverable     bool   `json:"discoverable"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.UpdateRecipe(recipeID, req.Name, req.Description, req.ResultItemID, req.SuccessRate, req.RequiredSkillLvl, req.CraftingTimeMs, req.Discoverable); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "updated"})
+}
+
 // DeleteItemHandler DELETE /admin/items/:id
 func (h *Handler) DeleteItemHandler(w http.ResponseWriter, r *http.Request) {
 	itemID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
@@ -114,4 +183,70 @@ func (h *Handler) DeleteItemHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "deleted"})
+}
+
+// GetItemsHandler GET /admin/items
+func (h *Handler) GetItemsHandler(w http.ResponseWriter, r *http.Request) {
+	items, err := h.service.GetItems()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string][]models.ItemTemplate{"items": items})
+}
+
+// GetItemHandler GET /admin/items/:id
+func (h *Handler) GetItemHandler(w http.ResponseWriter, r *http.Request) {
+	itemID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		http.Error(w, "invalid item id", http.StatusBadRequest)
+		return
+	}
+
+	item, err := h.service.GetItem(itemID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(item)
+}
+
+// UpdateItemHandler PUT /admin/items/:id
+func (h *Handler) UpdateItemHandler(w http.ResponseWriter, r *http.Request) {
+	itemID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		http.Error(w, "invalid item id", http.StatusBadRequest)
+		return
+	}
+
+	var req struct {
+		Name            string                 `json:"name"`
+		Type            string                 `json:"type"`
+		Rarity          string                 `json:"rarity"`
+		BaseDurability  int                    `json:"base_durability"`
+		RepairCost      int                    `json:"repair_cost"`
+		RepairMaterials map[string]interface{} `json:"repair_materials"`
+		Properties      map[string]interface{} `json:"properties"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return
+	}
+
+	// Encode JSONB fields
+	repairMatBytes, _ := json.Marshal(req.RepairMaterials)
+	propBytes, _ := json.Marshal(req.Properties)
+
+	if err := h.service.UpdateItem(itemID, req.Name, req.Type, req.Rarity, req.BaseDurability, req.RepairCost, models.JSONB(repairMatBytes), models.JSONB(propBytes)); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "updated"})
 }

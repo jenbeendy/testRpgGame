@@ -44,8 +44,14 @@ func main() {
 	r.Route("/admin", func(r chi.Router) {
 		r.Use(adminHandler.AdminOnly)
 		r.Post("/recipes", adminHandler.CreateRecipeHandler)
-		r.Post("/items", adminHandler.CreateItemHandler)
+		r.Get("/recipes", adminHandler.GetRecipesHandler)
+		r.Get("/recipes/{id}", adminHandler.GetRecipeHandler)
+		r.Put("/recipes/{id}", adminHandler.UpdateRecipeHandler)
 		r.Delete("/recipes/{id}", adminHandler.DeleteRecipeHandler)
+		r.Post("/items", adminHandler.CreateItemHandler)
+		r.Get("/items", adminHandler.GetItemsHandler)
+		r.Get("/items/{id}", adminHandler.GetItemHandler)
+		r.Put("/items/{id}", adminHandler.UpdateItemHandler)
 		r.Delete("/items/{id}", adminHandler.DeleteItemHandler)
 	})
 
