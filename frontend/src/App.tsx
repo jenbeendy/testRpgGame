@@ -3,7 +3,9 @@ import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
+import AdminRecipesPage from './pages/AdminRecipesPage'
 import PrivateRoute from './components/PrivateRoute'
+import AdminRoute from './components/AdminRoute'
 
 const queryClient = new QueryClient()
 
@@ -19,6 +21,16 @@ function App() {
             element={
               <PrivateRoute>
                 <DashboardPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/recipes"
+            element={
+              <PrivateRoute>
+                <AdminRoute>
+                  <AdminRecipesPage />
+                </AdminRoute>
               </PrivateRoute>
             }
           />
