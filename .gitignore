@@ -1,0 +1,11 @@
+bin/
+dist/
+.vscode/
+.idea/
+*.swp
+*.swo
+.env
+.env.local
+node_modules/
+*.log
+*.out
