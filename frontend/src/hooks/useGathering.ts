@@ -37,9 +37,10 @@ export const useGather = (userId: number | null) => {
       if (!res.ok) throw new Error('Gather failed');
       return res.json() as Promise<GatherResult>;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['inventory', userId] });
-      queryClient.invalidateQueries({ queryKey: ['gold', userId] });
+    onSuccess: async () => {
+      // Actively refetch to ensure fresh data
+      await queryClient.refetchQueries({ queryKey: ['inventory', userId] });
+      await queryClient.refetchQueries({ queryKey: ['gold', userId] });
     },
   });
 };
@@ -55,6 +56,7 @@ export const useGold = (userId: number | null) => {
       return data.gold as number;
     },
     enabled: !!userId,
+    staleTime: 0, // Aggressively refetch on mutation invalidation
   });
 };
 
@@ -86,9 +88,10 @@ export const useBuyItem = (userId: number | null) => {
       if (!res.ok) throw new Error('Purchase failed');
       return res.json() as Promise<BuyResult>;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['inventory', userId] });
-      queryClient.invalidateQueries({ queryKey: ['gold', userId] });
+    onSuccess: async () => {
+      // Actively refetch to ensure fresh data
+      await queryClient.refetchQueries({ queryKey: ['inventory', userId] });
+      await queryClient.refetchQueries({ queryKey: ['gold', userId] });
     },
   });
 };

@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import LoginPage from './pages/LoginPage'
@@ -9,10 +10,16 @@ import AdminItemsPage from './pages/AdminItemsPage'
 import AdminBatchImportPage from './pages/AdminBatchImportPage'
 import PrivateRoute from './components/PrivateRoute'
 import AdminRoute from './components/AdminRoute'
+import { useAuthStore } from './store/auth'
 
 const queryClient = new QueryClient()
 
 function App() {
+  useEffect(() => {
+    // Hydrate auth from localStorage on app mount
+    useAuthStore.getState().hydrate()
+  }, [])
+
   return (
     <QueryClientProvider client={queryClient}>
       <Router>

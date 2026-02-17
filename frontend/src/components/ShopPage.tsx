@@ -9,21 +9,38 @@ export const ShopPage = () => {
   const buyItem = useBuyItem(user?.id || null);
   const [quantities, setQuantities] = useState<Record<number, number>>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleBuy = async (itemId: number, itemName: string) => {
+    if (!user?.id) {
+      setError('User not loaded yet. Please refresh the page.');
+      return;
+    }
     const qty = quantities[itemId] || 1;
     try {
+      setError(null);
       await buyItem.mutateAsync({ itemId, qty });
       setSuccessMessage(`Purchased ${qty}x ${itemName}`);
       setTimeout(() => setSuccessMessage(null), 3000);
       setQuantities((prev) => ({ ...prev, [itemId]: 1 }));
     } catch (e) {
       console.error('Purchase failed:', e);
+      setError(String(e));
     }
   };
 
   return (
     <div className="p-6 space-y-6">
+      {error && (
+        <div className="p-4 bg-red-900/20 border border-red-500/50 text-red-200 rounded-lg">
+          ⚠️ {error}
+        </div>
+      )}
+      {!user?.id && (
+        <div className="p-4 bg-yellow-900/20 border border-yellow-500/50 text-yellow-200 rounded-lg">
+          ⏳ Loading user data...
+        </div>
+      )}
       <div className="bg-slate-700 rounded-lg p-4 border border-yellow-500/30">
         <div className="text-sm text-slate-300">Gold Balance</div>
         <div className="text-3xl font-bold text-yellow-400">{gold} 💰</div>

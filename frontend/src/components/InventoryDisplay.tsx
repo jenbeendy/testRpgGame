@@ -49,6 +49,7 @@ const InventorySlot = memo(({ item, itemName }: { item?: InventoryItem; itemName
 export default function InventoryDisplay() {
   const user = useAuthStore((state) => state.user)
 
+  // All hooks MUST be called at top level before any conditionals
   const { data: inventory, isLoading, error } = useQuery({
     queryKey: ['inventory', user?.id],
     queryFn: async () => {
@@ -57,10 +58,20 @@ export default function InventoryDisplay() {
       return res.data.items as InventoryItem[]
     },
     enabled: !!user?.id,
-    staleTime: 30000, // Cache for 30s (update on gather/shop/craft)
-    gcTime: 5 * 60 * 1000, // Keep in cache for 5 min
-    retry: 1, // Retry once before showing error
+    staleTime: 0, // Aggressively refetch on mutation invalidation
+    gcTime: 5 * 60 * 1000,
+    retry: 1,
   })
+
+  const itemsBySlot = useMemo(() => {
+    const slots: Record<string, InventoryItem> = {}
+    inventory?.forEach((item) => {
+      if (item.slot_x !== null && item.slot_y !== null) {
+        slots[`${item.slot_x},${item.slot_y}`] = item
+      }
+    })
+    return slots
+  }, [inventory])
 
   if (isLoading) {
     return <div className="text-gaming-cyan text-center py-12">⏳ Loading inventory...</div>
@@ -84,17 +95,6 @@ export default function InventoryDisplay() {
       </div>
     )
   }
-
-  // Memoize itemsBySlot to avoid recalculation on every render
-  const itemsBySlot = useMemo(() => {
-    const slots: Record<string, InventoryItem> = {}
-    inventory?.forEach((item) => {
-      if (item.slot_x !== null && item.slot_y !== null) {
-        slots[`${item.slot_x},${item.slot_y}`] = item
-      }
-    })
-    return slots
-  }, [inventory])
 
   return (
     <div className="gaming-card">

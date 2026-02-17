@@ -76,11 +76,36 @@ func (s *Service) AddItem(userID, itemTemplateID int64, quantity int) error {
 		)
 		return err
 	} else if err == sql.ErrNoRows {
-		// Insert new item
+		// Find first available slot (grid is 10x3 = 30 slots)
+		var slotX, slotY int
+		found := false
+		for y := 0; y < 3 && !found; y++ {
+			for x := 0; x < 10 && !found; x++ {
+				var occupied int
+				err := s.db.QueryRow(
+					`SELECT COUNT(*) FROM inventory_items WHERE inventory_id = $1 AND slot_x = $2 AND slot_y = $3`,
+					inventoryID, x, y,
+				).Scan(&occupied)
+				if err != nil {
+					return err
+				}
+				if occupied == 0 {
+					slotX = x
+					slotY = y
+					found = true
+				}
+			}
+		}
+
+		if !found {
+			return errors.New("inventory full")
+		}
+
+		// Insert new item with slot assignment
 		_, err := s.db.Exec(
-			`INSERT INTO inventory_items (inventory_id, item_template_id, quantity, current_durability)
-			 VALUES ($1, $2, $3, 100)`,
-			inventoryID, itemTemplateID, quantity,
+			`INSERT INTO inventory_items (inventory_id, item_template_id, quantity, current_durability, slot_x, slot_y)
+			 VALUES ($1, $2, $3, 100, $4, $5)`,
+			inventoryID, itemTemplateID, quantity, slotX, slotY,
 		)
 		return err
 	}

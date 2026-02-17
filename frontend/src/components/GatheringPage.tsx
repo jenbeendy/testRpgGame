@@ -20,6 +20,13 @@ export const GatheringPage = () => {
   const user = useAuthStore((s) => s.user);
   const [cooldowns, setCooldowns] = useState<Record<string, number>>({});
   const [lastResult, setLastResult] = useState<GatherResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Log for debugging
+  useEffect(() => {
+    console.log('[GatheringPage] User:', user);
+  }, [user]);
+
   const gather = useGather(user?.id || null);
 
   useEffect(() => {
@@ -37,20 +44,36 @@ export const GatheringPage = () => {
   }, []);
 
   const handleGather = async (zone: string) => {
+    if (!user?.id) {
+      setError('User not loaded yet. Please refresh the page.');
+      console.error('[GatheringPage] User ID missing:', user);
+      return;
+    }
     try {
+      setError(null);
       const result = await gather.mutateAsync(zone);
       setLastResult(result);
       if (result.seconds_remaining > 0) {
         setCooldowns((prev) => ({ ...prev, [zone]: result.seconds_remaining }));
       }
     } catch (e) {
-      // Handle cooldown error - parse seconds_remaining from error or response
       console.error('Gather failed:', e);
+      setError(String(e));
     }
   };
 
   return (
     <div className="p-6 space-y-6">
+      {error && (
+        <div className="p-4 bg-red-900/20 border border-red-500/50 text-red-200 rounded-lg">
+          ⚠️ {error}
+        </div>
+      )}
+      {!user?.id && (
+        <div className="p-4 bg-yellow-900/20 border border-yellow-500/50 text-yellow-200 rounded-lg">
+          ⏳ Loading user data...
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-4">
         {ZONES.map((zone) => (
           <div key={zone.id} className="bg-slate-700 rounded-lg p-4 border border-purple-500/30">
