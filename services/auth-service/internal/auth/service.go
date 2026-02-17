@@ -49,6 +49,14 @@ type User struct {
 	IsAdmin  bool   `json:"is_admin"`
 }
 
+// CustomClaims extends JWT claims with custom fields
+type CustomClaims struct {
+	UserID int64  `json:"user_id"`
+	Email  string `json:"email"`
+	IsAdmin bool   `json:"is_admin"`
+	jwt.RegisteredClaims
+}
+
 // Register creates new user account
 func (s *Service) Register(req RegisterRequest) (*User, error) {
 	if req.Email == "" || req.Username == "" || req.Password == "" {
@@ -188,19 +196,24 @@ func verifyPassword(password, hash string) bool {
 
 func (s *Service) generateJWT(userID int64, email string, isAdmin bool, duration time.Duration) (string, error) {
 	now := time.Now()
-	claims := jwt.RegisteredClaims{
-		Subject:   fmt.Sprintf("%d", userID),
-		Issuer:    "rpggame-auth",
-		IssuedAt:  jwt.NewNumericDate(now),
-		ExpiresAt: jwt.NewNumericDate(now.Add(duration)),
+	claims := CustomClaims{
+		UserID:  userID,
+		Email:   email,
+		IsAdmin: isAdmin,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   fmt.Sprintf("%d", userID),
+			Issuer:    "rpggame-auth",
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(now.Add(duration)),
+		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(s.jwtSecret))
 }
 
-func (s *Service) validateJWT(tokenString string) (*jwt.RegisteredClaims, error) {
-	claims := &jwt.RegisteredClaims{}
+func (s *Service) validateJWT(tokenString string) (*CustomClaims, error) {
+	claims := &CustomClaims{}
 	_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(s.jwtSecret), nil
 	})

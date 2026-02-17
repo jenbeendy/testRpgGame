@@ -28,41 +28,50 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-900">
-      <div className="w-full max-w-md p-8 bg-gray-800 rounded-lg shadow-lg">
-        <h1 className="text-2xl font-bold text-white mb-6">RPG Crafting Game</h1>
-        {error && <div className="mb-4 p-3 bg-red-900 text-red-100 rounded">{error}</div>}
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="flex items-center justify-center min-h-screen bg-gaming-dark">
+      <div className="w-full max-w-md gaming-card">
+        <h1 className="gaming-header text-4xl mb-2 text-center">RPG Crafting</h1>
+        <p className="text-gaming-cyan text-center text-sm mb-8">Enter the realm</p>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-900/20 border border-red-500/50 text-red-200 rounded-lg flex items-center gap-2">
+            <span>⚠️</span>
+            <span>{error}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-gray-300 mb-2">Email</label>
+            <label className="block text-gaming-cyan text-sm font-semibold mb-2">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:outline-none focus:border-blue-500"
+              className="gaming-input"
               required
             />
           </div>
           <div>
-            <label className="block text-gray-300 mb-2">Password</label>
+            <label className="block text-gaming-cyan text-sm font-semibold mb-2">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:outline-none focus:border-blue-500"
+              className="gaming-input"
               required
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+            className="gaming-button w-full"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? '⏳ Logging in...' : '⚔️ Login'}
           </button>
         </form>
-        <p className="mt-4 text-gray-300">
-          No account? <Link to="/register" className="text-blue-400 hover:underline">Register</Link>
+
+        <p className="mt-8 text-center text-gray-400">
+          No account? <Link to="/register" className="text-gaming-cyan hover:text-gaming-gold font-semibold transition-colors">Create one</Link>
         </p>
       </div>
     </div>

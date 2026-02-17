@@ -32,8 +32,8 @@ services:
 
   auth-service:
     build:
-      context: ./services/auth-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/auth-service/Dockerfile
     environment:
       DATABASE_URL: "postgres://postgres:password@postgres:5432/rpggame?sslmode=disable"
       JWT_SECRET: "dev-secret-key-change-in-production"
@@ -47,8 +47,8 @@ services:
 
   crafting-service:
     build:
-      context: ./services/crafting-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/crafting-service/Dockerfile
     environment:
       DATABASE_URL: "postgres://postgres:password@postgres:5432/rpggame?sslmode=disable"
       PORT: "8002"
@@ -61,8 +61,8 @@ services:
 
   inventory-service:
     build:
-      context: ./services/inventory-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/inventory-service/Dockerfile
     environment:
       DATABASE_URL: "postgres://postgres:password@postgres:5432/rpggame?sslmode=disable"
       PORT: "8003"
@@ -75,8 +75,8 @@ services:
 
   admin-service:
     build:
-      context: ./services/admin-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/admin-service/Dockerfile
     environment:
       DATABASE_URL: "postgres://postgres:password@postgres:5432/rpggame?sslmode=disable"
       PORT: "8004"
