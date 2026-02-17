@@ -155,3 +155,15 @@ func (h *Handler) RepairItemHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "item repaired"})
 }
+
+// ManualDecayHandler POST /internal/decay
+func (h *Handler) ManualDecayHandler(w http.ResponseWriter, r *http.Request) {
+	rowsAffected, err := h.service.DecayAllDurability()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]int64{"rows_affected": rowsAffected})
+}

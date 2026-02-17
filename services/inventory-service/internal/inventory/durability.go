@@ -1,6 +1,6 @@
 package inventory
 
-// DecayDurability applies time-based decay to items (hourly background job)
+// DecayDurability applies time-based decay to items for a specific user
 func (s *Service) DecayDurability(userID int64) error {
 	query := `
 		UPDATE inventory_items
@@ -11,6 +11,21 @@ func (s *Service) DecayDurability(userID int64) error {
 	`
 	_, err := s.db.Exec(query, userID)
 	return err
+}
+
+// DecayAllDurability applies time-based decay to all players' items
+func (s *Service) DecayAllDurability() (int64, error) {
+	query := `
+		UPDATE inventory_items
+		SET current_durability = GREATEST(0, current_durability - 1),
+		    last_decay_check = CURRENT_TIMESTAMP
+		WHERE (CURRENT_TIMESTAMP - last_decay_check) > INTERVAL '1 hour'
+	`
+	result, err := s.db.Exec(query)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
 // RepairItem repairs an item using materials

@@ -371,7 +371,7 @@ func TestRepairItemWithMaterials(t *testing.T) {
 	}
 }
 
-// TestDecayDurability tests durability decay background job
+// TestDecayDurability tests durability decay background job for single user
 func TestDecayDurability(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -391,6 +391,32 @@ func TestDecayDurability(t *testing.T) {
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("unmet expectations: %v", err)
+	}
+}
+
+// TestDecayAllDurability tests global durability decay across all players
+func TestDecayAllDurability(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("failed to create mock: %v", err)
+	}
+	defer db.Close()
+
+	// Update query for all items without user filter
+	mock.ExpectExec(`UPDATE inventory_items`).
+		WillReturnResult(sqlmock.NewResult(0, 7))
+
+	svc := NewService(db)
+	rowsAffected, err := svc.DecayAllDurability()
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if rowsAffected != 7 {
+		t.Errorf("expected 7 rows affected, got %d", rowsAffected)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("unmet expectations: %v", err)
