@@ -24,6 +24,11 @@ func main() {
 	}
 	defer db.Close()
 
+	// Configure connection pool for PostgreSQL - optimized for 100-500 concurrent users
+	db.SetMaxOpenConns(25)         // Max concurrent connections
+	db.SetMaxIdleConns(5)          // Keep 5 idle connections ready
+	db.SetConnMaxLifetime(0)       // No limit on connection lifetime
+
 	if err := db.Ping(); err != nil {
 		log.Fatal("cannot connect to database:", err)
 	}
