@@ -18,7 +18,18 @@ export default function LoginPage() {
 
     try {
       const res = await axios.post('/api/auth/login', { email, password })
-      setAuth(res.data.access_token, { email })
+      const token = res.data.access_token
+
+      // Decode JWT to extract user info (payload is middle part)
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      const user = {
+        id: payload.user_id,
+        email: payload.email,
+        username: payload.email.split('@')[0], // Fallback to email prefix
+        is_admin: payload.is_admin,
+      }
+
+      setAuth(token, user)
       navigate('/dashboard')
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed')
