@@ -15,13 +15,8 @@ export default defineConfig({
     },
     // Target modern browsers for smaller bundle
     target: 'esnext',
-    // Enable minification
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true, // Remove console logs in production
-      },
-    },
+    // Enable minification (default esbuild)
+    minify: true,
     // Generate bundle report
     reportCompressed: true,
   },

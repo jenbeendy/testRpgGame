@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useRecipes, type Recipe } from '../hooks/useRecipes'
 import { useAuthStore } from '../store/auth'
+import AnimatedProgressBar from './AnimatedProgressBar'
+import AnimatedResult from './AnimatedResult'
+import AnimatedFloatingText from './AnimatedFloatingText'
 
 export default function CraftingInterface() {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null)
@@ -115,30 +118,20 @@ export default function CraftingInterface() {
             </div>
 
             {/* Crafting Progress */}
-            {isCrafting && (
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gaming-purple font-bold">⚒️ Crafting...</span>
-                  <span className="text-gaming-gold font-bold">{Math.round(progress)}%</span>
-                </div>
-                <div className="w-full bg-gaming-darker rounded-full h-4 overflow-hidden border border-gaming-purple/30">
-                  <div
-                    className="h-full bg-gradient-to-r from-gaming-purple to-gaming-cyan transition-all duration-300 shadow-glow"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-              </div>
-            )}
+            {isCrafting && <AnimatedProgressBar progress={progress} />}
 
             {/* Result */}
             {result && (
-              <div className={`p-4 rounded-lg border ${result.success ? 'bg-gaming-green/20 border-gaming-green/50' : 'bg-red-900/20 border-red-500/50'}`}>
-                <p className={`font-bold text-lg ${result.success ? 'text-gaming-green' : 'text-red-300'}`}>
-                  {result.success ? '✨ Crafted!' : '❌ Failed!'}
-                </p>
-                <p className={`text-sm mt-1 ${result.success ? 'text-gaming-green' : 'text-red-200'}`}>{result.message}</p>
-                {result.xp > 0 && <p className="text-gaming-gold text-sm font-bold mt-2">+{result.xp} Experience</p>}
-              </div>
+              <>
+                <AnimatedResult
+                  success={result.success}
+                  message={result.message}
+                  xp={result.xp}
+                />
+                {result.xp > 0 && result.success && (
+                  <AnimatedFloatingText text={`+${result.xp} XP`} color="text-gaming-gold" x={300} y={200} />
+                )}
+              </>
             )}
 
             {/* Craft Button */}
