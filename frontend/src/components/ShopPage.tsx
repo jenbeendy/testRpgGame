@@ -10,10 +10,6 @@ export const ShopPage = () => {
   const [quantities, setQuantities] = useState<Record<number, number>>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  if (!user?.id) {
-    return <div className="text-gaming-cyan text-center py-12">⏳ Loading user data...</div>;
-  }
-
   const handleBuy = async (itemId: number, itemName: string) => {
     const qty = quantities[itemId] || 1;
     try {

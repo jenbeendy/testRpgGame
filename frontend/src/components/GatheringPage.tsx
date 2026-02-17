@@ -22,10 +22,6 @@ export const GatheringPage = () => {
   const [lastResult, setLastResult] = useState<GatherResult | null>(null);
   const gather = useGather(user?.id || null);
 
-  if (!user?.id) {
-    return <div className="text-gaming-cyan text-center py-12">⏳ Loading user data...</div>;
-  }
-
   useEffect(() => {
     const interval = setInterval(() => {
       setCooldowns((prev) => {
