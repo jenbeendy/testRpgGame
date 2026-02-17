@@ -26,7 +26,7 @@ func TestGetRecipeSuccess(t *testing.T) {
 	mock.ExpectQuery(`SELECT.*FROM recipes WHERE id = \$1`).WithArgs(recipeID).WillReturnRows(rows)
 	mock.ExpectQuery(`SELECT.*FROM recipe_ingredients WHERE recipe_id = \$1 ORDER BY position`).WithArgs(recipeID).WillReturnRows(ingRows)
 
-	svc := NewService(db)
+	svc := NewService(db, "")
 	recipe, err := svc.GetRecipe(recipeID)
 
 	if err != nil {
@@ -57,7 +57,7 @@ func TestGetRecipeNotFound(t *testing.T) {
 	recipeID := int64(999)
 	mock.ExpectQuery(`SELECT.*FROM recipes WHERE id = \$1`).WithArgs(recipeID).WillReturnError(sql.ErrNoRows)
 
-	svc := NewService(db)
+	svc := NewService(db, "")
 	recipe, err := svc.GetRecipe(recipeID)
 
 	if recipe != nil {
@@ -93,7 +93,7 @@ func TestGetAllRecipes(t *testing.T) {
 	mock.ExpectQuery(`SELECT.*FROM recipe_ingredients WHERE recipe_id = \$1 ORDER BY position`).WithArgs(int64(1)).WillReturnRows(ing1)
 	mock.ExpectQuery(`SELECT.*FROM recipe_ingredients WHERE recipe_id = \$1 ORDER BY position`).WithArgs(int64(2)).WillReturnRows(ing2)
 
-	svc := NewService(db)
+	svc := NewService(db, "")
 	results, err := svc.GetAllRecipes()
 
 	if err != nil {
@@ -126,7 +126,7 @@ func TestGetPlayerSkillsXPFormula(t *testing.T) {
 
 	mock.ExpectQuery(`SELECT.*FROM users WHERE id = \$1`).WithArgs(userID).WillReturnRows(rows)
 
-	svc := NewService(db)
+	svc := NewService(db, "")
 	skills, err := svc.GetPlayerSkills(userID)
 
 	if err != nil {
@@ -176,7 +176,7 @@ func TestCraftGuaranteedSuccess(t *testing.T) {
 		WillReturnResult(sqlmock.NewResult(0, 1))
 	mock.ExpectCommit()
 
-	svc := NewService(db)
+	svc := NewService(db, "")
 	result, err := svc.Craft(userID, recipeID, nil)
 
 	if err != nil {
@@ -222,7 +222,7 @@ func TestCraftGuaranteedFailure(t *testing.T) {
 		WillReturnResult(sqlmock.NewResult(0, 1))
 	mock.ExpectCommit()
 
-	svc := NewService(db)
+	svc := NewService(db, "")
 	result, err := svc.Craft(userID, recipeID, nil)
 
 	if err != nil {
@@ -264,7 +264,7 @@ func TestCraftSkillBonusCap(t *testing.T) {
 		WillReturnResult(sqlmock.NewResult(0, 1))
 	mock.ExpectCommit()
 
-	svc := NewService(db)
+	svc := NewService(db, "")
 	result, err := svc.Craft(userID, recipeID, nil)
 
 	if err != nil {
@@ -294,7 +294,7 @@ func TestDiscoverRecipeNew(t *testing.T) {
 		WithArgs(userID, recipeID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	svc := NewService(db)
+	svc := NewService(db, "")
 	discovered, err := svc.DiscoverRecipe(userID, recipeID)
 
 	if err != nil {
@@ -323,7 +323,7 @@ func TestDiscoverRecipeAlreadyDiscovered(t *testing.T) {
 
 	mock.ExpectQuery(`SELECT EXISTS`).WithArgs(userID, recipeID).WillReturnRows(existsRows)
 
-	svc := NewService(db)
+	svc := NewService(db, "")
 	discovered, err := svc.DiscoverRecipe(userID, recipeID)
 
 	if discovered {
@@ -361,7 +361,7 @@ func TestAdminCreateRecipe(t *testing.T) {
 		WithArgs(req.Name, req.Description, req.ResultItemID, req.SuccessRate, req.RequiredSkillLvl, req.CraftingTimeMs, req.Discoverable).
 		WillReturnRows(rows)
 
-	svc := NewService(db)
+	svc := NewService(db, "")
 	recipeID, err := svc.AdminCreateRecipe(req)
 
 	if err != nil {
@@ -395,7 +395,7 @@ func TestAdminCreateRecipeIngredient(t *testing.T) {
 		WithArgs(recipeID, req.ItemTemplateID, req.Quantity, req.Position, req.Optional).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	svc := NewService(db)
+	svc := NewService(db, "")
 	err = svc.AdminCreateRecipeIngredient(recipeID, req)
 
 	if err != nil {

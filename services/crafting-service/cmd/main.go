@@ -33,7 +33,12 @@ func main() {
 		log.Fatal("cannot connect to database:", err)
 	}
 
-	craftService := crafting.NewService(db)
+	inventoryURL := os.Getenv("INVENTORY_SERVICE_URL")
+	if inventoryURL == "" {
+		inventoryURL = "http://localhost:8003"
+	}
+
+	craftService := crafting.NewService(db, inventoryURL)
 	craftHandler := crafting.NewHandler(craftService)
 
 	r := chi.NewRouter()

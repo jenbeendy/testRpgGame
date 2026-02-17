@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useRecipes, type Recipe } from '../hooks/useRecipes'
 import { useAuthStore } from '../store/auth'
+import { useQueryClient } from '@tanstack/react-query'
 import AnimatedProgressBar from './AnimatedProgressBar'
 import AnimatedResult from './AnimatedResult'
 import AnimatedFloatingText from './AnimatedFloatingText'
@@ -13,6 +14,7 @@ export default function CraftingInterface() {
 
   const { data: recipes, isLoading } = useRecipes()
   const user = useAuthStore((state) => state.user)
+  const queryClient = useQueryClient()
 
   const handleCraft = async (recipe: Recipe) => {
     if (!user) return
@@ -41,6 +43,10 @@ export default function CraftingInterface() {
       })
       const data = await res.json()
       setResult(data)
+      // Invalidate inventory queries to refresh items
+      if (data.success && user) {
+        queryClient.invalidateQueries({ queryKey: ['inventory', user.id] })
+      }
     } catch (err) {
       setResult({ success: false, message: 'Crafting failed', xp: 0 })
     } finally {

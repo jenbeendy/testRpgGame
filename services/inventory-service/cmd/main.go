@@ -55,6 +55,12 @@ func main() {
 	r.Patch("/inventory/{userId}/items/{itemId}", invHandler.MoveItemHandler)
 	r.Post("/inventory/{userId}/items/{itemId}/repair", invHandler.RepairItemHandler)
 	r.Post("/internal/decay", invHandler.ManualDecayHandler)
+	r.Post("/gather/{userId}", invHandler.GatherHandler)
+	r.Get("/gold/{userId}", invHandler.GetGoldHandler)
+	r.Get("/shop/catalog", invHandler.GetShopCatalogHandler)
+	r.Post("/shop/{userId}/buy", invHandler.BuyItemHandler)
+	r.Post("/internal/consume/{userId}", invHandler.ConsumeItemsHandler)
+	r.Post("/internal/add-item/{userId}", invHandler.AddItemInternalHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {

@@ -1,18 +1,28 @@
 package crafting
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"math/rand"
+	"net/http"
 )
 
 type Service struct {
-	db *sql.DB
+	db             *sql.DB
+	inventoryURL   string
+	httpClient     *http.Client
 }
 
-func NewService(db *sql.DB) *Service {
-	return &Service{db: db}
+func NewService(db *sql.DB, inventoryURL string) *Service {
+	return &Service{
+		db:           db,
+		inventoryURL: inventoryURL,
+		httpClient:   &http.Client{},
+	}
 }
 
 // Recipe info returned to client
@@ -206,6 +216,35 @@ func (s *Service) Craft(userID, recipeID int64, ingredients map[int64]int) (*Cra
 
 	if err := tx.Commit(); err != nil {
 		return nil, err
+	}
+
+	// If craft succeeded, consume ingredients and add result item via HTTP
+	if success && s.inventoryURL != "" {
+		// Consume ingredients
+		if len(ingredients) > 0 {
+			consumeBody := map[string]interface{}{"items": ingredients}
+			consumeJSON, _ := json.Marshal(consumeBody)
+			consumeReq, _ := http.NewRequest("POST", fmt.Sprintf("%s/internal/consume/%d", s.inventoryURL, userID), bytes.NewReader(consumeJSON))
+			consumeReq.Header.Set("Content-Type", "application/json")
+			resp, _ := s.httpClient.Do(consumeReq)
+			if resp != nil {
+				io.ReadAll(resp.Body)
+				resp.Body.Close()
+			}
+		}
+
+		// Add result item
+		if resultItemID > 0 {
+			addItemBody := map[string]interface{}{"item_template_id": resultItemID, "quantity": 1}
+			addJSON, _ := json.Marshal(addItemBody)
+			addReq, _ := http.NewRequest("POST", fmt.Sprintf("%s/internal/add-item/%d", s.inventoryURL, userID), bytes.NewReader(addJSON))
+			addReq.Header.Set("Content-Type", "application/json")
+			resp, _ := s.httpClient.Do(addReq)
+			if resp != nil {
+				io.ReadAll(resp.Body)
+				resp.Body.Close()
+			}
+		}
 	}
 
 	msg := "Crafting failed"

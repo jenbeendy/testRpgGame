@@ -11,6 +11,14 @@ interface InventoryItem {
   current_durability: number
 }
 
+const ITEM_NAMES: Record<number, string> = {
+  1: 'Copper Ore', 2: 'Iron Ore', 3: 'Gold Ore',
+  5: 'Wood Log', 7: 'Leather Scrap', 8: 'Fine Leather', 9: 'Coal',
+  11: 'Water Essence', 12: 'Fire Essence', 13: 'Earth Essence', 14: 'Air Essence', 15: 'Crystal Shard',
+  16: 'Pure Crystal', 17: 'String', 18: 'Rope', 19: 'Cloth',
+  20: 'Leather Armor', 21: 'Copper Ingot', 22: 'Iron Ingot', 23: 'Steel Ingot',
+}
+
 export default function InventoryDisplay() {
   const user = useAuthStore((state) => state.user)
 
@@ -56,11 +64,12 @@ export default function InventoryDisplay() {
                   ? 'border-gaming-cyan/80 bg-gaming-purple/30 hover:bg-gaming-purple/50 shadow-glow-cyan hover:scale-105'
                   : 'border-gaming-purple/20 bg-gaming-darker hover:border-gaming-cyan/50 hover:bg-gaming-darker/80'
               }`}
-              title={item ? `Item #${item.item_template_id} x${item.quantity}` : 'Empty slot'}
+              title={item ? `${ITEM_NAMES[item.item_template_id] || `Item #${item.item_template_id}`} x${item.quantity}` : 'Empty slot'}
             >
               {item ? (
-                <div className="text-center">
-                  <div className="text-sm font-bold text-gaming-gold">{item.quantity}</div>
+                <div className="text-center text-xs px-1">
+                  <div className="text-xs font-semibold text-gaming-cyan truncate">{ITEM_NAMES[item.item_template_id] || `#${item.item_template_id}`}</div>
+                  <div className="text-xs font-bold text-gaming-gold mt-1">{item.quantity}</div>
                   {item.current_durability < 100 && (
                     <div className="text-xs text-gaming-gold mt-1" title="Durability">
                       {item.current_durability}%

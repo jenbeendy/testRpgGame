@@ -94,7 +94,7 @@ func buildTestRouter(db *sql.DB) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(userIDMiddleware)
 
-	svc := NewService(db)
+	svc := NewService(db, "")
 	handler := NewHandler(svc)
 
 	r.Get("/recipes", handler.GetRecipesHandler)

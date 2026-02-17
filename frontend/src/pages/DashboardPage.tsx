@@ -6,12 +6,16 @@ import { useNavigate } from 'react-router-dom'
 import InventoryDisplay from '../components/InventoryDisplay'
 import RecipeBook from '../components/RecipeBook'
 import CraftingInterface from '../components/CraftingInterface'
+import { GatheringPage } from '../components/GatheringPage'
+import { ShopPage } from '../components/ShopPage'
+import { useGold } from '../hooks/useGathering'
 
 export default function DashboardPage() {
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
   const navigate = useNavigate()
-  const [tab, setTab] = useState<'inventory' | 'recipes' | 'crafting'>('inventory')
+  const [tab, setTab] = useState<'inventory' | 'recipes' | 'crafting' | 'gather' | 'shop'>('inventory')
+  const { data: gold = 0 } = useGold(user?.id || 0)
 
   const { data: skills } = useQuery({
     queryKey: ['skills', user?.id],
@@ -41,7 +45,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Character Stats */}
-        <div className="grid grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-5 gap-6 mb-10">
           <div className="gaming-stat">
             <p className="text-gaming-cyan text-xs font-bold uppercase tracking-wider">Character</p>
             <p className="text-2xl font-bold text-white mt-2">{user?.username}</p>
@@ -66,21 +70,26 @@ export default function DashboardPage() {
             </div>
             <p className="text-xs text-gray-400 mt-2">Level up progress</p>
           </div>
+          <div className="gaming-stat">
+            <p className="text-yellow-500 text-xs font-bold uppercase tracking-wider">Gold</p>
+            <p className="text-3xl font-bold text-yellow-400 mt-2">💰 {gold}</p>
+          </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-8 mb-8 border-b border-gaming-purple/20 pb-4">
-          {['inventory', 'recipes', 'crafting'].map((t) => (
+        <div className="flex gap-8 mb-8 border-b border-gaming-purple/20 pb-4 overflow-x-auto">
+          {['inventory', 'recipes', 'crafting', 'gather', 'shop'].map((t) => (
             <button
               key={t}
               onClick={() => setTab(t as any)}
-              className={`px-2 py-2 font-bold text-lg transition-all duration-200 ${
+              className={`px-2 py-2 font-bold text-lg transition-all duration-200 whitespace-nowrap ${
                 tab === t
                   ? 'gaming-tab-active border-b-2'
                   : 'gaming-tab-inactive hover:text-gaming-purple'
               }`}
             >
               {t === 'inventory' && '🎒'} {t === 'recipes' && '📖'} {t === 'crafting' && '🔨'}{' '}
+              {t === 'gather' && '🌿'} {t === 'shop' && '💰'}
               {t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
           ))}
@@ -91,6 +100,8 @@ export default function DashboardPage() {
           {tab === 'inventory' && <InventoryDisplay />}
           {tab === 'recipes' && <RecipeBook />}
           {tab === 'crafting' && <CraftingInterface />}
+          {tab === 'gather' && <GatheringPage />}
+          {tab === 'shop' && <ShopPage />}
         </div>
       </div>
     </div>
