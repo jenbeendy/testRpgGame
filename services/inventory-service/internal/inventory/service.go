@@ -15,12 +15,12 @@ func NewService(db *sql.DB) *Service {
 
 // ItemDTO for API responses
 type ItemDTO struct {
-	ID               int64 `json:"id"`
-	ItemTemplateID   int64 `json:"item_template_id"`
-	Quantity         int   `json:"quantity"`
-	SlotX            int   `json:"slot_x"`
-	SlotY            int   `json:"slot_y"`
-	CurrentDurable   int   `json:"current_durability"`
+	ID               int64  `json:"id"`
+	ItemTemplateID   int64  `json:"item_template_id"`
+	Quantity         int    `json:"quantity"`
+	SlotX            *int   `json:"slot_x"`
+	SlotY            *int   `json:"slot_y"`
+	CurrentDurable   int    `json:"current_durability"`
 }
 
 // GetInventory retrieves user's inventory

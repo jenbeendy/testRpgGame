@@ -171,16 +171,9 @@ func (s *Service) BuyItem(userID int64, itemID int64, qty int) (*BuyResult, erro
 
 	totalCost := price * int64(qty)
 
-	// Atomic deduct + add item
-	tx, err := s.db.Begin()
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	// Check and deduct gold in one query
+	// Deduct gold (atomic check)
 	var goldRemaining int64
-	err = tx.QueryRow(
+	err := s.db.QueryRow(
 		`UPDATE users SET gold = gold - $1 WHERE id = $2 AND gold >= $1 RETURNING gold`,
 		totalCost, userID,
 	).Scan(&goldRemaining)
@@ -192,41 +185,11 @@ func (s *Service) BuyItem(userID int64, itemID int64, qty int) (*BuyResult, erro
 		return nil, err
 	}
 
-	// Add item (using tx version)
+	// Add items (separate, non-atomic for simplicity - could batch if needed)
 	for i := 0; i < qty; i++ {
-		var itemInvID int64
-		// Try to find existing stack
-		err := tx.QueryRow(
-			`SELECT id FROM inventory_items WHERE user_id = $1 AND item_template_id = $2 ORDER BY id LIMIT 1`,
-			userID, itemID,
-		).Scan(&itemInvID)
-
-		if err == nil {
-			// Update existing
-			_, err := tx.Exec(
-				`UPDATE inventory_items SET quantity = quantity + 1 WHERE id = $1`,
-				itemInvID,
-			)
-			if err != nil {
-				return nil, err
-			}
-		} else if err == sql.ErrNoRows {
-			// Insert new
-			_, err := tx.Exec(
-				`INSERT INTO inventory_items (user_id, item_template_id, quantity, slot_x, slot_y, durability_current, durability_max)
-				VALUES ($1, $2, 1, -1, -1, 100, 100)`,
-				userID, itemID,
-			)
-			if err != nil {
-				return nil, err
-			}
-		} else {
+		if err := s.AddItem(userID, itemID, 1); err != nil {
 			return nil, err
 		}
-	}
-
-	if err := tx.Commit(); err != nil {
-		return nil, err
 	}
 
 	return &BuyResult{
