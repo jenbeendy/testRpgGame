@@ -41,6 +41,12 @@ func main() {
 	craftService := crafting.NewService(db, inventoryURL)
 	craftHandler := crafting.NewHandler(craftService)
 
+	// JWT secret for auth middleware
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "dev-secret-key-change-in-production"
+	}
+
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
@@ -53,10 +59,15 @@ func main() {
 	r.Get("/recipes", craftHandler.GetRecipesHandler)
 	r.Get("/recipes/{id}", craftHandler.GetRecipeHandler)
 	r.Get("/recipes/{id}/hint", craftHandler.GetRecipeHintHandler)
-	r.Post("/craft", craftHandler.CraftHandler)
 	r.Get("/player-recipes/{userId}", craftHandler.GetPlayerRecipesHandler)
-	r.Post("/discover-recipe", craftHandler.DiscoverRecipeHandler)
 	r.Get("/skills/{userId}", craftHandler.GetSkillsHandler)
+
+	// Protected routes (require auth)
+	r.Route("/", func(r chi.Router) {
+		r.Use(craftHandler.AuthMiddleware(jwtSecret))
+		r.Post("/craft", craftHandler.CraftHandler)
+		r.Post("/discover-recipe", craftHandler.DiscoverRecipeHandler)
+	})
 
 	port := os.Getenv("PORT")
 	if port == "" {

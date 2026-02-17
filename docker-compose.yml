@@ -52,6 +52,7 @@ services:
     environment:
       DATABASE_URL: "postgres://postgres:password@postgres:5432/rpggame?sslmode=disable"
       INVENTORY_SERVICE_URL: "http://inventory-service:8003"
+      JWT_SECRET: "dev-secret-key-change-in-production"
       PORT: "8002"
     ports:
       - "8002:8002"
