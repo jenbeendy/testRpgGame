@@ -52,12 +52,14 @@ export default function InventoryDisplay() {
   const { data: inventory, isLoading, error } = useQuery({
     queryKey: ['inventory', user?.id],
     queryFn: async () => {
-      const res = await axios.get(`/api/inventory/${user?.id}`)
+      if (!user?.id) throw new Error('User ID not available')
+      const res = await axios.get(`/api/inventory/${user.id}`)
       return res.data.items as InventoryItem[]
     },
-    enabled: !!user,
+    enabled: !!user?.id,
     staleTime: 30000, // Cache for 30s (update on gather/shop/craft)
     gcTime: 5 * 60 * 1000, // Keep in cache for 5 min
+    retry: 1, // Retry once before showing error
   })
 
   if (isLoading) {

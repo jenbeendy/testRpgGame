@@ -43,15 +43,17 @@ export const useGather = (userId: number) => {
   });
 };
 
-export const useGold = (userId: number) => {
+export const useGold = (userId: number | null) => {
   return useQuery({
     queryKey: ['gold', userId],
     queryFn: async () => {
+      if (!userId) throw new Error('User ID not available');
       const res = await fetch(`/api/gold/${userId}`);
       if (!res.ok) throw new Error('Failed to fetch gold');
       const data = await res.json();
       return data.gold as number;
     },
+    enabled: !!userId,
   });
 };
 

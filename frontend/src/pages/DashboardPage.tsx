@@ -15,15 +15,18 @@ export default function DashboardPage() {
   const logout = useAuthStore((state) => state.logout)
   const navigate = useNavigate()
   const [tab, setTab] = useState<'inventory' | 'recipes' | 'crafting' | 'gather' | 'shop'>('inventory')
-  const { data: gold = 0 } = useGold(user?.id || 0)
+
+  // Only fetch if user ID is available
+  const { data: gold = 0 } = useGold(user?.id || null)
 
   const { data: skills } = useQuery({
     queryKey: ['skills', user?.id],
     queryFn: async () => {
-      const res = await axios.get(`/api/skills/${user?.id}`)
+      if (!user?.id) throw new Error('User ID not available')
+      const res = await axios.get(`/api/skills/${user.id}`)
       return res.data
     },
-    enabled: !!user,
+    enabled: !!user?.id,
   })
 
   const handleLogout = () => {
