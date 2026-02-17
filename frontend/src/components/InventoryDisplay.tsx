@@ -49,7 +49,7 @@ const InventorySlot = memo(({ item, itemName }: { item?: InventoryItem; itemName
 export default function InventoryDisplay() {
   const user = useAuthStore((state) => state.user)
 
-  const { data: inventory, isLoading } = useQuery({
+  const { data: inventory, isLoading, error } = useQuery({
     queryKey: ['inventory', user?.id],
     queryFn: async () => {
       const res = await axios.get(`/api/inventory/${user?.id}`)
@@ -62,6 +62,25 @@ export default function InventoryDisplay() {
 
   if (isLoading) {
     return <div className="text-gaming-cyan text-center py-12">⏳ Loading inventory...</div>
+  }
+
+  if (error) {
+    return (
+      <div className="gaming-card">
+        <div className="text-red-400 text-center py-12">
+          <p className="text-lg font-bold mb-2">⚠️ Failed to load inventory</p>
+          <p className="text-sm text-gray-400">{error instanceof Error ? error.message : 'Unknown error'}</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!inventory) {
+    return (
+      <div className="gaming-card">
+        <div className="text-gaming-cyan text-center py-12">No inventory data</div>
+      </div>
+    )
   }
 
   // Memoize itemsBySlot to avoid recalculation on every render

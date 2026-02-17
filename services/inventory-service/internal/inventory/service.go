@@ -38,7 +38,7 @@ func (s *Service) GetInventory(userID int64) ([]ItemDTO, error) {
 	}
 	defer rows.Close()
 
-	var items []ItemDTO
+	items := make([]ItemDTO, 0) // Initialize with empty slice, not nil
 	for rows.Next() {
 		var item ItemDTO
 		if err := rows.Scan(&item.ID, &item.ItemTemplateID, &item.Quantity, &item.SlotX, &item.SlotY, &item.CurrentDurable); err != nil {
