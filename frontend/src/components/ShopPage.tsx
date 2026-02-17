@@ -4,11 +4,15 @@ import { useAuthStore } from '../store/auth';
 
 export const ShopPage = () => {
   const user = useAuthStore((s) => s.user);
-  const { data: gold = 0 } = useGold(user?.id || 0);
+  const { data: gold = 0 } = useGold(user?.id || null);
   const { data: catalog = [] } = useShopCatalog();
-  const buyItem = useBuyItem(user?.id || 0);
+  const buyItem = useBuyItem(user?.id || null);
   const [quantities, setQuantities] = useState<Record<number, number>>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  if (!user?.id) {
+    return <div className="text-gaming-cyan text-center py-12">⏳ Loading user data...</div>;
+  }
 
   const handleBuy = async (itemId: number, itemName: string) => {
     const qty = quantities[itemId] || 1;

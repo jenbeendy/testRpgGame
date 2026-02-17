@@ -20,7 +20,11 @@ export const GatheringPage = () => {
   const user = useAuthStore((s) => s.user);
   const [cooldowns, setCooldowns] = useState<Record<string, number>>({});
   const [lastResult, setLastResult] = useState<GatherResult | null>(null);
-  const gather = useGather(user?.id || 0);
+  const gather = useGather(user?.id || null);
+
+  if (!user?.id) {
+    return <div className="text-gaming-cyan text-center py-12">⏳ Loading user data...</div>;
+  }
 
   useEffect(() => {
     const interval = setInterval(() => {

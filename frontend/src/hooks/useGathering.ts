@@ -24,10 +24,11 @@ export interface BuyResult {
   quantity: number;
 }
 
-export const useGather = (userId: number) => {
+export const useGather = (userId: number | null) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (zone: string) => {
+      if (!userId) throw new Error('User ID not available');
       const res = await fetch(`/api/gather/${userId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -69,10 +70,11 @@ export const useShopCatalog = () => {
   });
 };
 
-export const useBuyItem = (userId: number) => {
+export const useBuyItem = (userId: number | null) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (params: { itemId: number; qty: number }) => {
+      if (!userId) throw new Error('User ID not available');
       const res = await fetch(`/api/shop/${userId}/buy`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
