@@ -1,3 +1,4 @@
+import { useMemo, memo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { useAuthStore } from '../store/auth'
@@ -6,8 +7,8 @@ interface InventoryItem {
   id: number
   item_template_id: number
   quantity: number
-  slot_x: number
-  slot_y: number
+  slot_x: number | null
+  slot_y: number | null
   current_durability: number
 }
 
@@ -19,6 +20,32 @@ const ITEM_NAMES: Record<number, string> = {
   20: 'Leather Armor', 21: 'Copper Ingot', 22: 'Iron Ingot', 23: 'Steel Ingot',
 }
 
+// Memoized slot renderer to avoid re-rendering empty slots
+const InventorySlot = memo(({ item, itemName }: { item?: InventoryItem; itemName?: string }) => (
+  <div
+    className={`aspect-square rounded-lg border-2 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 ${
+      item
+        ? 'border-gaming-cyan/80 bg-gaming-purple/30 hover:bg-gaming-purple/50 shadow-glow-cyan hover:scale-105'
+        : 'border-gaming-purple/20 bg-gaming-darker hover:border-gaming-cyan/50 hover:bg-gaming-darker/80'
+    }`}
+    title={item ? `${itemName} x${item.quantity}` : 'Empty slot'}
+  >
+    {item ? (
+      <div className="text-center text-xs px-1">
+        <div className="text-xs font-semibold text-gaming-cyan truncate">{itemName}</div>
+        <div className="text-xs font-bold text-gaming-gold mt-1">{item.quantity}</div>
+        {item.current_durability < 100 && (
+          <div className="text-xs text-gaming-gold mt-1" title="Durability">
+            {item.current_durability}%
+          </div>
+        )}
+      </div>
+    ) : (
+      <div className="text-xs text-gray-600 font-bold">—</div>
+    )}
+  </div>
+))
+
 export default function InventoryDisplay() {
   const user = useAuthStore((state) => state.user)
 
@@ -29,19 +56,24 @@ export default function InventoryDisplay() {
       return res.data.items as InventoryItem[]
     },
     enabled: !!user,
+    staleTime: 30000, // Cache for 30s (update on gather/shop/craft)
+    gcTime: 5 * 60 * 1000, // Keep in cache for 5 min
   })
 
   if (isLoading) {
     return <div className="text-gaming-cyan text-center py-12">⏳ Loading inventory...</div>
   }
 
-  const itemsBySlot: Record<string, InventoryItem> = {}
-
-  inventory?.forEach((item) => {
-    if (item.slot_x !== null && item.slot_y !== null) {
-      itemsBySlot[`${item.slot_x},${item.slot_y}`] = item
-    }
-  })
+  // Memoize itemsBySlot to avoid recalculation on every render
+  const itemsBySlot = useMemo(() => {
+    const slots: Record<string, InventoryItem> = {}
+    inventory?.forEach((item) => {
+      if (item.slot_x !== null && item.slot_y !== null) {
+        slots[`${item.slot_x},${item.slot_y}`] = item
+      }
+    })
+    return slots
+  }, [inventory])
 
   return (
     <div className="gaming-card">
@@ -55,31 +87,10 @@ export default function InventoryDisplay() {
           const x = idx % 10
           const y = Math.floor(idx / 10)
           const item = itemsBySlot[`${x},${y}`]
+          const itemName = item ? ITEM_NAMES[item.item_template_id] || `#${item.item_template_id}` : undefined
 
           return (
-            <div
-              key={`${x},${y}`}
-              className={`aspect-square rounded-lg border-2 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 ${
-                item
-                  ? 'border-gaming-cyan/80 bg-gaming-purple/30 hover:bg-gaming-purple/50 shadow-glow-cyan hover:scale-105'
-                  : 'border-gaming-purple/20 bg-gaming-darker hover:border-gaming-cyan/50 hover:bg-gaming-darker/80'
-              }`}
-              title={item ? `${ITEM_NAMES[item.item_template_id] || `Item #${item.item_template_id}`} x${item.quantity}` : 'Empty slot'}
-            >
-              {item ? (
-                <div className="text-center text-xs px-1">
-                  <div className="text-xs font-semibold text-gaming-cyan truncate">{ITEM_NAMES[item.item_template_id] || `#${item.item_template_id}`}</div>
-                  <div className="text-xs font-bold text-gaming-gold mt-1">{item.quantity}</div>
-                  {item.current_durability < 100 && (
-                    <div className="text-xs text-gaming-gold mt-1" title="Durability">
-                      {item.current_durability}%
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-xs text-gray-600 font-bold">—</div>
-              )}
-            </div>
+            <InventorySlot key={`${x},${y}`} item={item} itemName={itemName} />
           )
         })}
       </div>
